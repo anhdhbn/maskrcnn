@@ -89,43 +89,54 @@ class CocoConfig(Config):
 
     STEPS_PER_EPOCH = int(number_image_train/IMAGES_PER_GPU)
     VALIDATION_STEPS = int(number_image_val/IMAGES_PER_GPU)
-    BACKBONE = "resnet50"
-    # BACKBONE = "resnet101"
-    
-    # The strides of each layer of the FPN Pyramid. These values
-    # are based on a Resnet101 backbone.
-    BACKBONE_STRIDES = [4, 8, 16, 32, 64]
-    # BACKBONE_STRIDES = [2, 4, 8, 16, 32]
 
-    # Size of the fully-connected layers in the classification graph
-    FPN_CLASSIF_FC_LAYERS_SIZE = 1024
-    # FPN_CLASSIF_FC_LAYERS_SIZE = 512
+    useDefault = False
 
-    # Size of the top-down layers used to build the feature pyramid
-    TOP_DOWN_PYRAMID_SIZE = 256
-    # TOP_DOWN_PYRAMID_SIZE = 128
+    if useDefault:
+        # BACKBONE = "resnet50"
+        BACKBONE = "resnet101"
+        
+        # The strides of each layer of the FPN Pyramid. These values
+        # are based on a Resnet101 backbone.
+        BACKBONE_STRIDES = [4, 8, 16, 32, 64]
+        # BACKBONE_STRIDES = [2, 4, 8, 16, 32]
 
-    # Length of square anchor side in pixels
-    RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
-    # RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
-    
+        # Size of the fully-connected layers in the classification graph
+        FPN_CLASSIF_FC_LAYERS_SIZE = 1024
+        # FPN_CLASSIF_FC_LAYERS_SIZE = 512
 
-    # Ratios of anchors at each cell (width/height)
-    # A value of 1 represents a square anchor, and 0.5 is a wide anchor
-    RPN_ANCHOR_RATIOS = [0.5, 1, 2]
+        # Size of the top-down layers used to build the feature pyramid
+        TOP_DOWN_PYRAMID_SIZE = 256
+        # TOP_DOWN_PYRAMID_SIZE = 128
 
-    # Anchor stride
-    # If 1 then anchors are created for each cell in the backbone feature map.
-    # If 2, then anchors are created for every other cell, and so on.
-    RPN_ANCHOR_STRIDE = 1
+        # Length of square anchor side in pixels
+        RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
+        # RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
+        
 
-    # Non-max suppression threshold to filter RPN proposals.
-    # You can increase this during training to generate more propsals.
-    RPN_NMS_THRESHOLD = 0.7
+        # Ratios of anchors at each cell (width/height)
+        # A value of 1 represents a square anchor, and 0.5 is a wide anchor
+        RPN_ANCHOR_RATIOS = [0.5, 1, 2]
 
-    # How many anchors per image to use for RPN training
-    RPN_TRAIN_ANCHORS_PER_IMAGE = 256
-    # RPN_TRAIN_ANCHORS_PER_IMAGE = 128
+        # Anchor stride
+        # If 1 then anchors are created for each cell in the backbone feature map.
+        # If 2, then anchors are created for every other cell, and so on.
+        RPN_ANCHOR_STRIDE = 1
+
+        # Non-max suppression threshold to filter RPN proposals.
+        # You can increase this during training to generate more propsals.
+        RPN_NMS_THRESHOLD = 0.7
+
+        # How many anchors per image to use for RPN training
+        RPN_TRAIN_ANCHORS_PER_IMAGE = 256
+        # RPN_TRAIN_ANCHORS_PER_IMAGE = 128
+    else:
+        BACKBONE = "resnet50"
+        BACKBONE_STRIDES = [2, 4, 8, 16, 32]
+        FPN_CLASSIF_FC_LAYERS_SIZE = 512
+        TOP_DOWN_PYRAMID_SIZE = 128
+        RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
+        RPN_TRAIN_ANCHORS_PER_IMAGE = 128
 
     # Uncomment to train on 8 GPUs (default is 1)
     GPU_COUNT = 1
@@ -517,28 +528,29 @@ if __name__ == '__main__':
         # *** This training schedule is an example. Update to your needs ***
 
         # Training - Stage 1
-        print("Training network heads")
-        model.train(dataset_train, dataset_val,
-                    learning_rate=config.LEARNING_RATE,
-                    epochs=40,
-                    layers='heads',
-                    augmentation=augmentation)
+        # print("Training network heads")
+        # model.train(dataset_train, dataset_val,
+        #             learning_rate=config.LEARNING_RATE,
+        #             epochs=40,
+        #             layers='heads',
+        #             augmentation=augmentation)
 
-        # Training - Stage 2
-        # Finetune layers from ResNet stage 4 and up
-        print("Fine tune Resnet stage 4 and up")
-        model.train(dataset_train, dataset_val,
-                    learning_rate=config.LEARNING_RATE,
-                    epochs=120,
-                    layers='4+',
-                    augmentation=augmentation)
+        # # Training - Stage 2
+        # # Finetune layers from ResNet stage 4 and up
+        # print("Fine tune Resnet stage 4 and up")
+        # model.train(dataset_train, dataset_val,
+        #             learning_rate=config.LEARNING_RATE,
+        #             epochs=120,
+        #             layers='4+',
+        #             augmentation=augmentation)
 
         # Training - Stage 3
         # Fine tune all layers
         print("Fine tune all layers")
         model.train(dataset_train, dataset_val,
-                    learning_rate=config.LEARNING_RATE / 10,
-                    epochs=160,
+                    # learning_rate=config.LEARNING_RATE / 10,
+                    learning_rate=config.LEARNING_RATE ,
+                    epochs=50,
                     layers='all',
                     augmentation=augmentation)
 
