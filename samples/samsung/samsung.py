@@ -94,20 +94,21 @@ class CocoConfig(Config):
     
     # The strides of each layer of the FPN Pyramid. These values
     # are based on a Resnet101 backbone.
-    BACKBONE_STRIDES = [2, 4, 8, 16, 32]
+    BACKBONE_STRIDES = [4, 8, 16, 32, 64]
+    # BACKBONE_STRIDES = [2, 4, 8, 16, 32]
 
     # Size of the fully-connected layers in the classification graph
-    FPN_CLASSIF_FC_LAYERS_SIZE = 512
+    FPN_CLASSIF_FC_LAYERS_SIZE = 1024
+    # FPN_CLASSIF_FC_LAYERS_SIZE = 512
 
     # Size of the top-down layers used to build the feature pyramid
-    TOP_DOWN_PYRAMID_SIZE = 128
-
-    # Number of classification classes (including background)
-    NUM_CLASSES = 1  # Override in sub-classes
+    TOP_DOWN_PYRAMID_SIZE = 256
+    # TOP_DOWN_PYRAMID_SIZE = 128
 
     # Length of square anchor side in pixels
-    RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
-    # RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
+    RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
+    # RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
+    
 
     # Ratios of anchors at each cell (width/height)
     # A value of 1 represents a square anchor, and 0.5 is a wide anchor
@@ -123,7 +124,8 @@ class CocoConfig(Config):
     RPN_NMS_THRESHOLD = 0.7
 
     # How many anchors per image to use for RPN training
-    RPN_TRAIN_ANCHORS_PER_IMAGE = 128
+    RPN_TRAIN_ANCHORS_PER_IMAGE = 256
+    # RPN_TRAIN_ANCHORS_PER_IMAGE = 128
 
     # Uncomment to train on 8 GPUs (default is 1)
     GPU_COUNT = 1
