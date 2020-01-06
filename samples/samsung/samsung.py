@@ -551,9 +551,17 @@ if __name__ == '__main__':
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
-                    epochs=15,
+                    epochs=1,
                     layers='all',
                     augmentation=augmentation)
+                    
+        # serialize model to JSON
+        model_json = model.to_json()
+        with open("model.json", "w") as json_file:
+            json_file.write(model_json)
+        # serialize weights to HDF5
+        model.save_weights("model.h5")
+        print("Saved model to disk")
 
     elif args.command == "evaluate":
         # Validation dataset
