@@ -78,11 +78,52 @@ class CocoConfig(Config):
     to the COCO dataset.
     """
     # Give the configuration a recognizable name
-    NAME = "coco"
+    NAME = "coco" 
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 4
+
+    number_image_train = 800
+    number_image_val = 200
+
+    STEPS_PER_EPOCH = int(number_image_train/IMAGES_PER_GPU)
+    VALIDATION_STEPS = int(number_image_val/IMAGES_PER_GPU)
+    BACKBONE = "resnet50"
+    # BACKBONE = "resnet101"
+    
+    # The strides of each layer of the FPN Pyramid. These values
+    # are based on a Resnet101 backbone.
+    BACKBONE_STRIDES = [2, 4, 8, 16, 32]
+
+    # Size of the fully-connected layers in the classification graph
+    FPN_CLASSIF_FC_LAYERS_SIZE = 512
+
+    # Size of the top-down layers used to build the feature pyramid
+    TOP_DOWN_PYRAMID_SIZE = 128
+
+    # Number of classification classes (including background)
+    NUM_CLASSES = 1  # Override in sub-classes
+
+    # Length of square anchor side in pixels
+    RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
+    # RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
+
+    # Ratios of anchors at each cell (width/height)
+    # A value of 1 represents a square anchor, and 0.5 is a wide anchor
+    RPN_ANCHOR_RATIOS = [0.5, 1, 2]
+
+    # Anchor stride
+    # If 1 then anchors are created for each cell in the backbone feature map.
+    # If 2, then anchors are created for every other cell, and so on.
+    RPN_ANCHOR_STRIDE = 1
+
+    # Non-max suppression threshold to filter RPN proposals.
+    # You can increase this during training to generate more propsals.
+    RPN_NMS_THRESHOLD = 0.7
+
+    # How many anchors per image to use for RPN training
+    RPN_TRAIN_ANCHORS_PER_IMAGE = 128
 
     # Uncomment to train on 8 GPUs (default is 1)
     GPU_COUNT = 1
@@ -452,7 +493,7 @@ if __name__ == '__main__':
 
     # Load weights
     print("Loading weights ", model_path)
-    model.load_weights(model_path, by_name=True)
+    # model.load_weights(model_path, by_name=True)
 
     # Train or evaluate
     if args.command == "train":
