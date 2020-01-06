@@ -82,7 +82,7 @@ class CocoConfig(Config):
 
     # We use a GPU with 12GB memory, which can fit two images.
     # Adjust down if you use a smaller GPU.
-    IMAGES_PER_GPU = 4
+    IMAGES_PER_GPU = 2
 
     number_image_train = 800
     number_image_val = 200
@@ -551,7 +551,7 @@ if __name__ == '__main__':
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
-                    epochs=50,
+                    epochs=15,
                     layers='all',
                     augmentation=augmentation)
 
