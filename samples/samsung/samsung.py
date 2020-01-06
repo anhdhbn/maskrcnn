@@ -131,12 +131,13 @@ class CocoConfig(Config):
         RPN_TRAIN_ANCHORS_PER_IMAGE = 256
         # RPN_TRAIN_ANCHORS_PER_IMAGE = 128
     else:
+        n = 4
         BACKBONE = "resnet50"
-        BACKBONE_STRIDES = [2, 4, 8, 16, 32]
-        FPN_CLASSIF_FC_LAYERS_SIZE = 512
-        TOP_DOWN_PYRAMID_SIZE = 128
-        RPN_ANCHOR_SCALES = (16, 32, 64, 128, 256)
-        RPN_TRAIN_ANCHORS_PER_IMAGE = 128
+        BACKBONE_STRIDES = [int(4/n), int(8/n), int(16/n), int(32/n), int(64/n)]
+        FPN_CLASSIF_FC_LAYERS_SIZE = int(512/n)
+        TOP_DOWN_PYRAMID_SIZE = int(256/n)
+        RPN_ANCHOR_SCALES = (int(32/n), int(64/n), int(128/n), int(256/n), int(512/n))
+        RPN_TRAIN_ANCHORS_PER_IMAGE = int(256/n)
 
     # Uncomment to train on 8 GPUs (default is 1)
     GPU_COUNT = 1
