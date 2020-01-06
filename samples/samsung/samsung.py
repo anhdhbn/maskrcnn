@@ -66,7 +66,7 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 
 from pathlib import Path 
 import skimage.draw
-
+from keras.callbacks import ModelCheckpoint
 ############################################################
 #  Configurations
 ############################################################
@@ -138,6 +138,8 @@ class CocoConfig(Config):
         TOP_DOWN_PYRAMID_SIZE = int(256/n)
         RPN_ANCHOR_SCALES = (int(32/n), int(64/n), int(128/n), int(256/n), int(512/n))
         RPN_TRAIN_ANCHORS_PER_IMAGE = int(256/n)
+        # IMAGE_MIN_DIM = 700
+        # IMAGE_MAX_DIM  =
 
     # Uncomment to train on 8 GPUs (default is 1)
     GPU_COUNT = 1
@@ -547,13 +549,17 @@ if __name__ == '__main__':
 
         # Training - Stage 3
         # Fine tune all layers
+        filepath = "saved-model-{epoch:02d}-{val_acc:.2f}.hdf5"
+        checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=False, mode='max')  
         print("Fine tune all layers")
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
                     epochs=1,
                     layers='all',
-                    augmentation=augmentation)
+                    augmentation=augmentation,
+                    custom_callbacks = [checkpoint]
+                    )
                     
         # serialize model to JSON
         model_json = model.to_json()
