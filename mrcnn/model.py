@@ -2309,7 +2309,7 @@ class MaskRCNN():
             defined in the Dataset class.
         """
         assert self.mode == "training", "Create model in training mode."
-
+        print("================= logs dir", self.log_dir)
         # Pre-defined layer regular expressions
         layer_regex = {
             # all layers but the backbone

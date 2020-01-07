@@ -549,24 +549,24 @@ if __name__ == '__main__':
 
         # Training - Stage 3
         # Fine tune all layers
-        filepath = "saved-model-{epoch:02d}-{val_acc:.2f}.hdf5"
-        checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=False, mode='max')  
+        # filepath = "saved-model-{epoch:02d}.hdf5"
+        # checkpoint = ModelCheckpoint(filepath, verbose=1, save_best_only=False, mode='max')  
         print("Fine tune all layers")
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
-                    epochs=1,
+                    epochs=15,
                     layers='all',
                     augmentation=augmentation,
-                    custom_callbacks = [checkpoint]
+                    # custom_callbacks = [checkpoint]
                     )
                     
         # serialize model to JSON
         model_json = model.to_json()
-        with open("model.json", "w") as json_file:
+        with open("../../logs/model.json", "w") as json_file:
             json_file.write(model_json)
         # serialize weights to HDF5
-        model.save_weights("model.h5")
+        model.save_weights("../../logs/model.h5")
         print("Saved model to disk")
 
     elif args.command == "evaluate":
