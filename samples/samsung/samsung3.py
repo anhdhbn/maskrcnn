@@ -297,6 +297,20 @@ def evaluate_coco(model, dataset, coco, eval_type="bbox", limit=0, image_ids=Non
 #  Training
 ############################################################
 
+def draw_loss(history, name):
+    training_loss = history['loss']
+    test_loss = history['val_loss']
+
+    # Create count of the number of epochs
+    epoch_count = range(1, len(training_loss) + 1)
+
+    # Visualize loss history
+    plt.plot(epoch_count, training_loss, 'r--')
+    plt.plot(epoch_count, test_loss, 'b-')
+    plt.legend(['Training Loss', 'Val Loss'])
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.savefig(f'{name}.png')
 
 if __name__ == '__main__':
     import argparse
@@ -391,18 +405,20 @@ if __name__ == '__main__':
         print("Training network heads")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=1,
+                    epochs=5,
                     layers='heads',
                     augmentation=augmentation)
+        draw_loss(model.history.history, "loss1")
 
         # Training - Stage 2
         # Finetune layers from ResNet stage 4 and up
         print("Fine tune Resnet stage 4 and up")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=2,
+                    epochs=5,
                     layers='4+',
                     augmentation=augmentation)
+        draw_loss(model.history.history, "loss2")
 
         # Training - Stage 3
         # Fine tune all layers
@@ -419,29 +435,18 @@ if __name__ == '__main__':
             return lrate
         lrate = LearningRateScheduler(step_decay)
         callbacks_list = [lrate]
+
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
-                    epochs=3,
+                    epochs=10,
                     layers='all',
                     augmentation=augmentation,
-                    custom_callbacks = callbacks_list
+                    # custom_callbacks = callbacks_list
                     # custom_callbacks = [checkpoint]
                     )
                     
-        training_loss = model.history['loss']
-        test_loss = model.history['val_loss']
-
-        # Create count of the number of epochs
-        epoch_count = range(1, len(training_loss) + 1)
-
-        # Visualize loss history
-        plt.plot(epoch_count, training_loss, 'r--')
-        plt.plot(epoch_count, test_loss, 'b-')
-        plt.legend(['Training Loss', 'Val Loss'])
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.savefig('../../logs/loss.png')
+        draw_loss(model.history.history, "loss3")
 
     elif args.command == "evaluate":
         # Validation dataset
