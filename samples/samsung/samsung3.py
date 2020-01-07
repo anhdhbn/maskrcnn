@@ -82,7 +82,7 @@ class CocoConfig(Config):
     # Give the configuration a recognizable name
     NAME = "coco" 
     GPU_COUNT = 1
-    IMAGES_PER_GPU = 8
+    IMAGES_PER_GPU = 4
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 2  # background + 3 shapes
