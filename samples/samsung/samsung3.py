@@ -409,12 +409,12 @@ if __name__ == '__main__':
         # filepath = "saved-model-{epoch:02d}.hdf5"
         # checkpoint = ModelCheckpoint(filepath, verbose=1, save_best_only=False, mode='max')  
         print("Fine tune all layers")
-        lrate = LearningRateScheduler(step_decay)
-        callbacks_list = [lrate]
+
         def step_decay(epoch):
+            import math
             initial_lrate = 0.1
             drop = 0.5
-            epochs_drop = 10.0
+            epochs_drop = 4.0
             lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
             return lrate
         lrate = LearningRateScheduler(step_decay)
