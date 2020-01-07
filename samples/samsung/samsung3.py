@@ -438,9 +438,9 @@ if __name__ == '__main__':
 
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
-                    learning_rate=config.LEARNING_RATE ,
+                    learning_rate=config.LEARNING_RATE / 10,
                     epochs=20,
-                    layers='all',
+                    layers='all', 
                     augmentation=augmentation,
                     # custom_callbacks = callbacks_list
                     # custom_callbacks = [checkpoint]
