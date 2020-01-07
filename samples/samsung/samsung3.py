@@ -310,7 +310,7 @@ def draw_loss(history, name):
     plt.legend(['Training Loss', 'Val Loss'])
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
-    plt.savefig(f'{name}.png')
+    plt.savefig(f'../../logs/{name}.png')
 
 if __name__ == '__main__':
     import argparse
