@@ -415,7 +415,7 @@ if __name__ == '__main__':
         print("Fine tune Resnet stage 4 and up")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=5,
+                    epochs=10,
                     layers='4+',
                     augmentation=augmentation)
         draw_loss(model.history.history, "loss2")
@@ -439,7 +439,7 @@ if __name__ == '__main__':
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
-                    epochs=10,
+                    epochs=20,
                     layers='all',
                     augmentation=augmentation,
                     # custom_callbacks = callbacks_list
