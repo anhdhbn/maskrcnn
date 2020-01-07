@@ -90,11 +90,11 @@ class CocoConfig(Config):
     STEPS_PER_EPOCH = int(number_image_train/IMAGES_PER_GPU)
     VALIDATION_STEPS = int(number_image_val/IMAGES_PER_GPU)
 
-    useDefault = False
+    useDefault = True
 
     if useDefault:
-        # BACKBONE = "resnet50"
-        BACKBONE = "resnet101"
+        BACKBONE = "resnet50"
+        # BACKBONE = "resnet101"
         
         # The strides of each layer of the FPN Pyramid. These values
         # are based on a Resnet101 backbone.
@@ -509,7 +509,7 @@ if __name__ == '__main__':
 
     # Load weights
     print("Loading weights ", model_path)
-    # model.load_weights(model_path, by_name=True)
+    model.load_weights(model_path, by_name=True)
 
     # Train or evaluate
     if args.command == "train":
