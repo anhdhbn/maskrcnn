@@ -67,6 +67,7 @@ DEFAULT_LOGS_DIR = os.path.join(ROOT_DIR, "logs")
 from pathlib import Path 
 import skimage.draw
 from keras.callbacks import ModelCheckpoint
+from keras.callbacks import LearningRateScheduler
 import matplotlib.pyplot as plt
 ############################################################
 #  Configurations
@@ -81,7 +82,7 @@ class CocoConfig(Config):
     # Give the configuration a recognizable name
     NAME = "coco" 
     GPU_COUNT = 1
-    IMAGES_PER_GPU = 2
+    IMAGES_PER_GPU = 8
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 2  # background + 3 shapes
@@ -100,7 +101,6 @@ class CocoConfig(Config):
     TRAIN_ROIS_PER_IMAGE = 32
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 100
 
     # use small validation steps since the epoch is small
     number_image_train = 800
@@ -391,7 +391,7 @@ if __name__ == '__main__':
         print("Training network heads")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=2,
+                    epochs=1,
                     layers='heads',
                     augmentation=augmentation)
 
@@ -400,7 +400,7 @@ if __name__ == '__main__':
         print("Fine tune Resnet stage 4 and up")
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
-                    epochs=3,
+                    epochs=2,
                     layers='4+',
                     augmentation=augmentation)
 
@@ -409,17 +409,28 @@ if __name__ == '__main__':
         # filepath = "saved-model-{epoch:02d}.hdf5"
         # checkpoint = ModelCheckpoint(filepath, verbose=1, save_best_only=False, mode='max')  
         print("Fine tune all layers")
+        lrate = LearningRateScheduler(step_decay)
+        callbacks_list = [lrate]
+        def step_decay(epoch):
+            initial_lrate = 0.1
+            drop = 0.5
+            epochs_drop = 10.0
+            lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
+            return lrate
+        lrate = LearningRateScheduler(step_decay)
+        callbacks_list = [lrate]
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE ,
-                    epochs=10,
+                    epochs=3,
                     layers='all',
                     augmentation=augmentation,
+                    custom_callbacks = callbacks_list
                     # custom_callbacks = [checkpoint]
                     )
                     
-        training_loss = model.keras_model.history['loss']
-        test_loss = model.keras_model.history['val_loss']
+        training_loss = model.history['loss']
+        test_loss = model.history['val_loss']
 
         # Create count of the number of epochs
         epoch_count = range(1, len(training_loss) + 1)
