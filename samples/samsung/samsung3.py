@@ -68,6 +68,7 @@ from pathlib import Path
 import skimage.draw
 from keras.callbacks import ModelCheckpoint
 from keras.callbacks import LearningRateScheduler
+from keras.callbacks import ReduceLROnPlateau
 import matplotlib.pyplot as plt
 ############################################################
 #  Configurations
@@ -367,9 +368,9 @@ def color_splash(image, mask):
 #  Training
 ############################################################
 
-def draw_loss(history, name):
-    training_loss = history['loss']
-    test_loss = history['val_loss']
+def draw_loss(history, name, t_loss  =  [], val_loss  =  []):
+    training_loss = t_loss + history['loss']
+    test_loss = val_loss + history['val_loss']
 
     # Create count of the number of epochs
     epoch_count = range(1, len(training_loss) + 1)
@@ -381,6 +382,7 @@ def draw_loss(history, name):
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.savefig(f'../../logs/{name}.png')
+    return training_loss, test_loss
 
 if __name__ == '__main__':
     import argparse
@@ -481,8 +483,7 @@ if __name__ == '__main__':
                     epochs=5,
                     layers='heads',
                     augmentation=augmentation)
-        draw_loss(model.history.history, "loss1")
-
+        training_loss, test_loss = draw_loss(model.history.history, "loss1")
         # Training - Stage 2
         # Finetune layers from ResNet stage 4 and up
         print("Fine tune Resnet stage 4 and up")
@@ -491,12 +492,11 @@ if __name__ == '__main__':
                     epochs=10,
                     layers='4+',
                     augmentation=augmentation)
-        draw_loss(model.history.history, "loss2")
+        training_loss, test_loss = draw_loss(model.history.history, "loss2", training_loss, test_loss)
 
         # Training - Stage 3
         # Fine tune all layers
-        # filepath = "saved-model-{epoch:02d}.hdf5"
-        # checkpoint = ModelCheckpoint(filepath, verbose=1, save_best_only=False, mode='max')  
+
         print("Fine tune all layers")
 
         def step_decay(epoch):
@@ -508,18 +508,38 @@ if __name__ == '__main__':
             return lrate
         lrate = LearningRateScheduler(step_decay)
         callbacks_list = [lrate]
+        redu = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
+
+        # def exp_decay(epoch):
+        #     initial_lrate = 0.001
+        #     k = 0.5
+        #     lrate = initial_lrate * exp(-k*t)
+        #     return lrate
+
+        # lrate = LearningRateScheduler(exp_decay)
+
+        def step_decay(epoch):
+            initial_lrate = 0.001
+            drop = 0.5
+            epochs_drop = 4.0
+            lrate = initial_lrate * math.pow(drop,  
+                    math.floor((1+epoch)/epochs_drop))
+            return lrate
+
+        lrate = LearningRateScheduler(step_decay)
 
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
                     learning_rate=config.LEARNING_RATE / 10,
-                    epochs=20,
+                    epochs=30,
                     layers='all', 
                     augmentation=augmentation,
+                    custom_callbacks = [lrate],
                     # custom_callbacks = callbacks_list
                     # custom_callbacks = [checkpoint]
                     )
                     
-        draw_loss(model.history.history, "loss3")
+        draw_loss(model.history.history, "loss3", training_loss, test_loss)
 
     elif args.command == "evaluate":
         # Validation dataset
