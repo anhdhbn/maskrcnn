@@ -292,6 +292,75 @@ def evaluate_coco(model, dataset, coco, eval_type="bbox", limit=0, image_ids=Non
         t_prediction, t_prediction / len(image_ids)))
     print("Total time: ", time.time() - t_start)
 
+############################################################
+#  Detection
+############################################################
+
+def detect(model, image_path):
+    import matplotlib
+    # Agg backend runs without a display
+    matplotlib.use('Agg')
+    import matplotlib.pyplot as plt
+    dataset = CocoDataset()
+    dataset.load_coco("./data", "val")
+    dataset.prepare()
+    from mrcnn import visualize
+    for image_id in dataset.image_ids:
+        # Load image and run detection
+        info  = dataset.image_info[image_id]
+
+        image = skimage.io.imread(info["path"])
+        print("Running on {}".format(info["path"]))
+        # Detect objects
+        r = model.detect([image], verbose=0)[0]
+        # Encode image to RLE. Returns a string of multiple lines
+        # rle = mask_to_rle(source_id, r["masks"], r["scores"])
+        # submission.append(rle)
+        # Save image with masks
+        visualize.display_instances(
+            image, r['rois'], r['masks'], r['class_ids'],
+            dataset.class_names, r['scores'],
+            show_bbox=False, show_mask=False,
+            title="Predictions")
+        plt.savefig("{}/{}.png".format("/root/maskrcnn/samples/samsung/out", dataset.image_info[image_id]["id"]))
+
+
+    # print("Running on {}".format(image_path))
+    # # Read image
+    # image = skimage.io.imread(image_path)
+    # # Detect objects
+    # r = model.detect([image], verbose=1)[0]
+    # from mrcnn import visualize
+    # visualize.display_instances(
+    #         image, r['rois'], r['masks'], r['class_ids'],
+    #         dataset.class_names, r['scores'],
+    #         show_bbox=False, show_mask=False,
+    #         title="Predictions")
+    # plt.savefig("{}/{}.png".format("/root/maskrcnn/samples/samsung/out", "abc"))
+    # Save output
+    # import datetime
+
+    # file_name = "/root/maskrcnn/samples/samsung/out/splash_{:%Y%m%dT%H%M%S}.png".format(datetime.datetime.now())
+    # skimage.io.imsave(file_name, splash)
+
+def color_splash(image, mask):
+    """Apply color splash effect.
+    image: RGB image [height, width, 3]
+    mask: instance segmentation mask [height, width, instance count]
+
+    Returns result image.
+    """
+    # Make a grayscale copy of the image. The grayscale copy still
+    # has 3 RGB channels, though.
+    gray = skimage.color.gray2rgb(skimage.color.rgb2gray(image)) * 255
+    # Copy color pixels from the original color image where mask is set
+    if mask.shape[-1] > 0:
+        # We're treating all instances as one, so collapse the mask into one layer
+        mask = (np.sum(mask, -1, keepdims=True) >= 1)
+        splash = np.where(mask, image, gray).astype(np.uint8)
+    else:
+        splash = gray.astype(np.uint8)
+    return splash
 
 ############################################################
 #  Training
@@ -337,6 +406,9 @@ if __name__ == '__main__':
                         default=500,
                         metavar="<image count>",
                         help='Images to use for evaluation (default=500)')
+    parser.add_argument('--image', required=False,
+                        metavar="path or URL to image",
+                        help='Image to apply the color splash effect on')
 
     args = parser.parse_args()
     print("Command: ", args.command)
@@ -455,6 +527,8 @@ if __name__ == '__main__':
         dataset_val.prepare()
         print("Running COCO evaluation on {} images.".format(args.limit))
         evaluate_coco(model, dataset_val, coco, "bbox", limit=int(args.limit))
+    elif args.command == "detect":
+        detect(model, image_path=args.image)
     else:
         print("'{}' is not recognized. "
               "Use 'train' or 'evaluate'".format(args.command))
