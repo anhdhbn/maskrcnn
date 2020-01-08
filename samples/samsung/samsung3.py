@@ -46,7 +46,7 @@ from pycocotools import mask as maskUtils
 import zipfile
 import urllib.request
 import shutil
-
+import math
 # Root directory of the project
 ROOT_DIR = os.path.abspath("../../")
 import numpy
@@ -478,20 +478,44 @@ if __name__ == '__main__':
 
         # Training - Stage 1
         print("Training network heads")
+        def step_decay(epoch):
+            initial_lrate = config.LEARNING_RATE
+            keep = 0.5
+            epochs_drop = 3.0
+            lrate = initial_lrate * math.pow(keep,  
+                    math.floor((1+epoch)/epochs_drop))
+            return lrate
+
+        lrate = LearningRateScheduler(step_decay)
+
         model.train(dataset_train, dataset_val,
                     learning_rate=config.LEARNING_RATE,
                     epochs=5,
                     layers='heads',
-                    augmentation=augmentation)
+                    augmentation=augmentation,
+                    custom_callbacks=[lrate],
+                    )
         training_loss, test_loss = draw_loss(model.history.history, "loss1")
         # Training - Stage 2
         # Finetune layers from ResNet stage 4 and up
         print("Fine tune Resnet stage 4 and up")
+        def step_decay(epoch):
+            initial_lrate = config.LEARNING_RATE
+            keep = 0.5
+            epochs_drop = 3.0
+            lrate = initial_lrate * math.pow(keep,  
+                    math.floor((1+epoch)/epochs_drop))
+            return lrate
+
+        lrate = LearningRateScheduler(step_decay)
+
         model.train(dataset_train, dataset_val,
-                    learning_rate=config.LEARNING_RATE,
+                    learning_rate=config.LEARNING_RATE ,
                     epochs=10,
                     layers='4+',
-                    augmentation=augmentation)
+                    augmentation=augmentation,
+                    custom_callbacks=[lrate],
+                    )
         training_loss, test_loss = draw_loss(model.history.history, "loss2", training_loss, test_loss)
 
         # Training - Stage 3
@@ -499,15 +523,6 @@ if __name__ == '__main__':
 
         print("Fine tune all layers")
 
-        def step_decay(epoch):
-            import math
-            initial_lrate = 0.1
-            drop = 0.5
-            epochs_drop = 4.0
-            lrate = initial_lrate * math.pow(drop, math.floor((1+epoch)/epochs_drop))
-            return lrate
-        lrate = LearningRateScheduler(step_decay)
-        callbacks_list = [lrate]
         redu = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0)
 
         # def exp_decay(epoch):
@@ -519,10 +534,10 @@ if __name__ == '__main__':
         # lrate = LearningRateScheduler(exp_decay)
 
         def step_decay(epoch):
-            initial_lrate = 0.001
-            drop = 0.5
-            epochs_drop = 4.0
-            lrate = initial_lrate * math.pow(drop,  
+            initial_lrate = config.LEARNING_RATE / 2
+            keep = 0.5
+            epochs_drop = 5.0
+            lrate = initial_lrate * math.pow(keep,  
                     math.floor((1+epoch)/epochs_drop))
             return lrate
 
@@ -530,7 +545,7 @@ if __name__ == '__main__':
 
         model.train(dataset_train, dataset_val,
                     # learning_rate=config.LEARNING_RATE / 10,
-                    learning_rate=config.LEARNING_RATE / 10,
+                    learning_rate=config.LEARNING_RATE / 2,
                     epochs=30,
                     layers='all', 
                     augmentation=augmentation,
