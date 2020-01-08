@@ -305,6 +305,7 @@ def detect(model, image_path):
     dataset.load_coco("./data", "val")
     dataset.prepare()
     from mrcnn import visualize
+    print(dataset.image_ids)
     for image_id in dataset.image_ids:
         # Load image and run detection
         info  = dataset.image_info[image_id]
