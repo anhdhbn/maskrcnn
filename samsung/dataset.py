@@ -2,6 +2,9 @@
 #  Dataset
 ############################################################
 from mrcnn import model as modellib, utils
+import os
+import skimage.draw
+import numpy as np
 
 class CocoDataset(utils.Dataset):
     def load_coco(self, dataset_dir, subset, class_ids=None,
@@ -53,10 +56,7 @@ class CocoDataset(utils.Dataset):
                 path=image_path,
                 width=width,
                 height=height,
-                polygons=polygons
-                # annotations=coco.loadAnns(coco.getAnnIds(
-                #     imgIds=[i], catIds=class_ids, iscrowd=None))
-                    )
+                polygons=polygons)
 
 
     def load_mask(self, image_id):
