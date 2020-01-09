@@ -183,7 +183,7 @@ if __name__ == '__main__':
                     augmentation=augmentation,
                     custom_callbacks=[lrate],
                     )
-        training_loss, test_loss = utilities.draw_loss(model.history.history, "loss1", ROOT_DIR)
+        training_loss, test_loss, learning_rate = utilities.draw_loss(model.history.history, "loss1", ROOT_DIR)
         # Training - Stage 2
         # Finetune layers from ResNet stage 4 and up
         print("Fine tune Resnet stage 4 and up")
@@ -194,7 +194,7 @@ if __name__ == '__main__':
                     augmentation=augmentation,
                     custom_callbacks=[lrate],
                     )
-        training_loss, test_loss = utilities.draw_loss(model.history.history, "loss2",ROOT_DIR, training_loss, test_loss)
+        training_loss, test_loss, learning_rate = utilities.draw_loss(model.history.history, "loss2", ROOT_DIR, training_loss, test_loss, learning_rate)
 
         # Training - Stage 3
         # Fine tune all layers
@@ -210,7 +210,7 @@ if __name__ == '__main__':
                     custom_callbacks = [lrate, reduce],
                     )
                     
-        utilities.draw_loss(model.history.history, "loss3", training_loss, test_loss, ROOT_DIR)
+        utilities.draw_loss(model.history.history, "loss3", ROOT_DIR, training_loss, test_loss, learning_rate)
 
     elif args.command == "evaluate":
         # Validation dataset
