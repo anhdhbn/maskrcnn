@@ -1,3 +1,9 @@
+import skimage.draw
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from mrcnn import visualize
+
 ############################################################
 #  COCO Evaluation
 ############################################################
@@ -102,3 +108,18 @@ def color_splash(image, mask):
     else:
         splash = gray.astype(np.uint8)
     return splash
+
+
+def evaluate(model, dataset):
+    image_ids = dataset.image_ids
+    image_id = image_ids[20]
+    info  = dataset.image_info[image_id]
+    image = skimage.io.imread(info["path"])
+
+    r = model.detect([image], verbose=0)[0]
+    visualize.display_instances(
+            image, r['rois'], r['masks'], r['class_ids'],
+            dataset.class_names, r['scores'],
+            show_bbox=False, show_mask=False,
+            title="Predictions")
+    plt.savefig("{}/{}.png".format("../samsung/out", dataset.image_info[image_id]["id"]))

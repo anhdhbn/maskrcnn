@@ -69,7 +69,7 @@ from samsung.netconfig.resnet101 import Resnet101Config
 from samsung.dataset import CocoDataset
 from samsung import utilities
 from samsung.predict import detect
-
+from samsung.evaluate import evaluate
 
 if __name__ == '__main__':
     import argparse
@@ -212,13 +212,13 @@ if __name__ == '__main__':
                     
         utilities.draw_loss(model.history.history, "loss3", training_loss, test_loss, ROOT_DIR)
 
-    # elif args.command == "evaluate":
-    #     # Validation dataset
-    #     dataset_val = CocoDataset()
-    #     dataset_val.load_coco(args.dataset,  "val" )
-    #     dataset_val.prepare()
-    #     print("Running COCO evaluation on {} images.".format(args.limit))
-    #     evaluate_coco(model, dataset_val, coco, "bbox", limit=int(args.limit))
+    elif args.command == "evaluate":
+        # Validation dataset
+        dataset_val = CocoDataset()
+        dataset_val.load_coco(args.dataset, "val")
+        dataset_val.prepare()
+        evaluate(model, dataset_val)
+        
     elif args.command == "detect":
         detect(model, ROOT_DIR)
     else:
