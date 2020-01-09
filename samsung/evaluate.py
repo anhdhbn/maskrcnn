@@ -2,7 +2,12 @@ import skimage.draw
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import numpy as np
+
+from mrcnn import utils
+import mrcnn.model as modellib
 from mrcnn import visualize
+from mrcnn.model import log
 
 ############################################################
 #  COCO Evaluation
@@ -110,16 +115,78 @@ def color_splash(image, mask):
     return splash
 
 
-def evaluate(model, dataset):
+def evaluate(model, dataset_val, inference_config):
+    APs = []
+    for image_id in dataset_val.image_ids:
+        # Load image and ground truth data
+        image, image_meta, gt_class_id, gt_bbox, gt_mask =\
+            modellib.load_image_gt(dataset_val, inference_config,
+                                image_id, use_mini_mask=False)
+        molded_images = np.expand_dims(modellib.mold_image(image, inference_config), 0)
+        # Run object detection
+        results = model.detect([image], verbose=0)
+        r = results[0]
+        # Compute AP
+        AP, precisions, recalls, overlaps =\
+            utils.compute_ap(gt_bbox, gt_class_id, gt_mask,
+                            r["rois"], r["class_ids"], r["scores"], r['masks'])
+        APs.append(AP)
+        
+    print("mAP: ", np.mean(APs))
+
+def evaluate3(model, dataset):
     image_ids = dataset.image_ids
-    image_id = image_ids[20]
+    coco_image_ids = [dataset.image_info[id]["id"] for id in image_ids]
+    t_prediction = 0
+    t_start = time.time()
+
+    results = []
+    for i, image_id in enumerate(image_ids):
+        # Load image
+        image = dataset.load_image(image_id)
+
+        # Run detection
+        t = time.time()
+        r = model.detect([image], verbose=0)[0]
+        t_prediction += (time.time() - t)
+
+        # Convert results to COCO format
+        # Cast masks to uint8 because COCO tools errors out on bool
+        image_results = build_coco_results(dataset, coco_image_ids[i:i + 1],
+                                           r["rois"], r["class_ids"],
+                                           r["scores"],
+                                           r["masks"].astype(np.uint8))
+        results.extend(image_results)
+
+    # Load results. This modifies results with additional attributes.
+    coco_results = coco.loadRes(results)
+
+    # Evaluate
+    cocoEval = COCOeval(coco, coco_results, eval_type)
+    cocoEval.params.imgIds = coco_image_ids
+    cocoEval.evaluate()
+    cocoEval.accumulate()
+    cocoEval.summarize()
+
+    print("Prediction time: {}. Average {}/image".format(
+        t_prediction, t_prediction / len(image_ids)))
+    print("Total time: ", time.time() - t_start)
+
+def evaluate2(model, dataset):
+    image_ids = dataset.image_ids
+    image_id = image_ids[3]
     info  = dataset.image_info[image_id]
     image = skimage.io.imread(info["path"])
 
     r = model.detect([image], verbose=0)[0]
+    print(r)
+
+    r = get_max(r)
+
     visualize.display_instances(
             image, r['rois'], r['masks'], r['class_ids'],
             dataset.class_names, r['scores'],
             show_bbox=False, show_mask=False,
             title="Predictions")
     plt.savefig("{}/{}.png".format("../samsung/out", dataset.image_info[image_id]["id"]))
+

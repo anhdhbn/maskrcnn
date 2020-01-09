@@ -120,6 +120,7 @@ if __name__ == '__main__':
     if args.command == "train":
         config = class_config()
     else:
+        print(class_config)
         class InferenceConfig(class_config):
             # Set batch size to 1 since we'll be running inference on
             # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
@@ -215,9 +216,9 @@ if __name__ == '__main__':
     elif args.command == "evaluate":
         # Validation dataset
         dataset_val = CocoDataset()
-        dataset_val.load_coco(args.dataset, "val")
+        dataset_val.load_coco(args.dataset, "val", config)
         dataset_val.prepare()
-        evaluate(model, dataset_val)
+        evaluate(model, dataset_val, config)
         
     elif args.command == "detect":
         detect(model, ROOT_DIR)
