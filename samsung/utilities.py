@@ -1,4 +1,5 @@
 import math
+import matplotlib.pyplot as plt
 
 def draw_loss(history, name, t_loss  =  [], val_loss  =  []):
     training_loss = t_loss + history['loss']
